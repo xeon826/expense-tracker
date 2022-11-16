@@ -1,57 +1,77 @@
-from PyQt5.QtWidgets import (QMainWindow, QApplication, QLabel, QCheckBox,
-                             QComboBox, QListWidget, QLineEdit, QLineEdit,
-                             QSpinBox, QDoubleSpinBox, QSlider,
-                             QListWidgetItem)
-from PyQt5.QtGui import QIcon
-from PyQt5 import QtCore
-
-from ftpretty import ftpretty
 import sys
-import os
-from ftplib import FTP_TLS
+from PyQt5.QtWidgets import QMainWindow, QApplication, QPushButton, QWidget, QAction, QTabWidget, QVBoxLayout
+from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import pyqtSlot
+from PyQt5 import QtCore, QtWidgets
+import matplotlib
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+from matplotlib.figure import Figure
+
+matplotlib.use('Qt5Agg')
 
 
-class MainWindow(QMainWindow):
+class MplCanvas(FigureCanvasQTAgg):
+
+    def __init__(self, parent=None, width=5, height=4, dpi=100):
+        fig = Figure(figsize=(width, height), dpi=dpi)
+        self.axes = fig.add_subplot(111)
+        super(MplCanvas, self).__init__(fig)
+
+
+class App(QMainWindow):
 
     def __init__(self):
-        super(MainWindow, self).__init__()
+        super().__init__()
+        self.title = 'PyQt5 tabs - pythonspot.com'
+        self.left = 0
+        self.top = 0
+        self.width = 300
+        self.height = 200
+        self.setWindowTitle(self.title)
+        self.setGeometry(self.left, self.top, self.width, self.height)
 
-        self.setWindowTitle("My App")
-        self.setStyleSheet("background-color: #1C1C1C;color: white")
+        self.table_widget = MyTableWidget(self)
+        self.setCentralWidget(self.table_widget)
 
-        widget = QListWidget()
-        files = f.list('/', extra=True)
-
-        # try:
-        #     files = ftps.dir()
-        # except ftpslib.error_perm as resp:
-        #     if str(resp) == "550 No files found":
-        #         print("No files in this directory")
-        #     else:
-        #         raise
-        items = []
-        # icon = QIcon(os.getcwd() + "/icons/directory.png")
-        widget.setIconSize(QtCore.QSize(15, 15))
-        for f in files:
-            # items.append(QListWidgetItem(icon, f['name']))
-            widget.addItem((QListWidgetItem(
-                QIcon(os.getcwd() + '/icons/' +
-                      ('directory' if f['directory'] == 'd' else 'file') +
-                      '.png'), f['name'])))
-
-        widget.currentItemChanged.connect(self.index_changed)
-        widget.currentTextChanged.connect(self.text_changed)
-
-        self.setCentralWidget(widget)
-
-    def index_changed(self, i):  # Not an index, i is a QListItem
-        print(i.text())
-
-    def text_changed(self, s):  # s is a str
-        print(s)
+        self.show()
 
 
-app = QApplication(sys.argv)
-w = MainWindow()
-w.show()
-app.exec()
+class MyTableWidget(QWidget):
+
+    def __init__(self, parent):
+        super(QWidget, self).__init__(parent)
+        self.layout = QVBoxLayout(self)
+
+        # Initialize tab screen
+        self.tabs = QTabWidget()
+        self.tab1 = QWidget()
+        self.tab2 = QWidget()
+        self.tabs.resize(300, 200)
+
+        # Add tabs
+        self.tabs.addTab(self.tab1, "Tab 1")
+        self.tabs.addTab(self.tab2, "Tab 2")
+
+        # Create first tab
+        self.tab1.layout = QVBoxLayout(self)
+        self.pushButton1 = QPushButton("PyQt5 button")
+        self.tab1.layout.addWidget(self.pushButton1)
+        self.tab1.setLayout(self.tab1.layout)
+
+        # Add tabs to widget
+        self.layout.addWidget(self.tabs)
+        self.setLayout(self.layout)
+
+    @pyqtSlot()
+    def on_click(self):
+        print("\n")
+        for currentQTableWidgetItem in self.tableWidget.selectedItems():
+            print(currentQTableWidgetItem.row(),
+                  currentQTableWidgetItem.column(),
+                  currentQTableWidgetItem.text())
+
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    ex = App()
+    sys.exit(app.exec_())
