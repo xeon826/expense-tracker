@@ -52,15 +52,26 @@ class MyTableWidget(QWidget):
         self.tabs.addTab(self.tab1, "Tab 1")
         self.tabs.addTab(self.tab2, "Tab 2")
 
+        self.sc = MplCanvas(self, width=5, height=4, dpi=100)
+        self.sc.axes.plot([0, 1, 2, 3, 4], [10, 1, 20, 3, 40])
+
         # Create first tab
         self.tab1.layout = QVBoxLayout(self)
         self.pushButton1 = QPushButton("PyQt5 button")
-        self.tab1.layout.addWidget(self.pushButton1)
+        # self.pushButton1 = QPushButton("PyQt5 button")
+        self.tab1.layout.addWidget(self.sc)
         self.tab1.setLayout(self.tab1.layout)
+
+        # self.setCentralWidget(sc)
+
+        self.tab2.layout = QVBoxLayout(self)
+        self.tab2.setLayout(self.tab2.layout)
+        self.tab2.layout.addWidget(self.pushButton1)
 
         # Add tabs to widget
         self.layout.addWidget(self.tabs)
         self.setLayout(self.layout)
+        self.show()
 
     @pyqtSlot()
     def on_click(self):
