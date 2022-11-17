@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtWidgets import QMainWindow, QApplication, QPushButton, QWidget, QAction, QTabWidget, QVBoxLayout
+from PyQt5.QtWidgets import QMainWindow, QApplication, QPushButton, QWidget, QAction, QTabWidget, QVBoxLayout, QToolBar, QMenu, QGridLayout, QMenuBar, QPlainTextEdit
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot
 from PyQt5 import QtCore, QtWidgets
@@ -31,9 +31,28 @@ class App(QMainWindow):
         self.setGeometry(self.left, self.top, self.width, self.height)
 
         self.table_widget = MyTableWidget(self)
+        self.toolbar = QToolBar("My main toolbar")
+        self.addToolBar(self.toolbar)
         self.setCentralWidget(self.table_widget)
+        layout = QGridLayout()
+        self.setLayout(layout)
+        menubar = QMenuBar()
+        layout.addWidget(menubar, 0, 0)
+        actionFile = menubar.addMenu("File")
+        actionFile.addAction("New")
+        actionFile.addAction("Open")
+        actionFile.addAction("Save")
+        actionFile.addSeparator()
+        actionFile.addAction("Quit")
+        menubar.addMenu("Edit")
+        menubar.addMenu("View")
+        menubar.addMenu("Help")
 
-        self.show()
+        # add textbox
+        tbox = QPlainTextEdit()
+        layout.addWidget(tbox, 1, 0)
+
+        # self.show()
 
 
 class MyTableWidget(QWidget):
@@ -44,10 +63,13 @@ class MyTableWidget(QWidget):
 
         # Initialize tab screen
         self.tabs = QTabWidget()
-        self.tab1 = QWidget()
-        self.tab2 = QWidget()
         self.tabs.resize(300, 200)
 
+        self.tab1 = QWidget()
+        self.tab2 = QWidget()
+        self.tab_names = [
+            'Bar',
+        ]
         # Add tabs
         self.tabs.addTab(self.tab1, "Tab 1")
         self.tabs.addTab(self.tab2, "Tab 2")
@@ -71,7 +93,7 @@ class MyTableWidget(QWidget):
         # Add tabs to widget
         self.layout.addWidget(self.tabs)
         self.setLayout(self.layout)
-        self.show()
+        # self.show()
 
     @pyqtSlot()
     def on_click(self):
@@ -82,7 +104,11 @@ class MyTableWidget(QWidget):
                   currentQTableWidgetItem.text())
 
 
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    ex = App()
-    sys.exit(app.exec_())
+# if __name__ == '__main__':
+#     app = QApplication(sys.argv)
+#     ex = App()
+#     sys.exit(app.exec_())
+app = QApplication(sys.argv)
+screen = App()
+screen.show()
+sys.exit(app.exec_())
