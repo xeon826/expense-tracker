@@ -53,33 +53,12 @@ class App(QMainWindow):
             self.add_branch(menubar, branch, k)
 
     def add_branch(self, menubar, branch, k):
-        # if type(branch) is dict:
-        if type(k) is str:
+        if type(branch) is dict:
             file_menu = menubar.addMenu(k)
             for key, action in branch.items():
-                return self.add_branch(file_menu, action, key)
+                self.add_branch(file_menu, action, key)
         else:
             menubar.addAction(QAction(*branch))
-            # return self.add_branch(menubar, branch, k)
-
-        # for key, menu_items in self.menu_items.items():
-
-        # for key, menu_btn in self.menu_btns.items():
-        #     file_menu = menubar.addMenu(key)
-        #     for r, action in menu_btn.items():
-        #         if type(action) is dict:
-        #             for t, a in action:
-        #                 file_menu = menubar.addMenu(t)
-        #             file_menu.addAction(QAction(*action))
-
-        # file_menu.addAction(QAction(*v))
-
-        # imp_menu = QMenu('Import', self)
-        # imp_act = QAction('Import mail', self)
-        # imp_menu.addAction(imp_act)
-        # file_menu.addMenu(imp_menu)
-
-        # self.show()
 
     def on_import_click(self, s):
         print("click", s)
