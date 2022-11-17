@@ -31,26 +31,22 @@ class App(QMainWindow):
         self.setGeometry(self.left, self.top, self.width, self.height)
 
         self.table_widget = MyTableWidget(self)
-        self.toolbar = QToolBar("My main toolbar")
-        self.addToolBar(self.toolbar)
+        # self.toolbar = QToolBar("My main toolbar")
+        # self.addToolBar(self.toolbar)
         self.setCentralWidget(self.table_widget)
-        layout = QGridLayout()
-        self.setLayout(layout)
-        menubar = QMenuBar()
-        layout.addWidget(menubar, 0, 0)
-        actionFile = menubar.addMenu("File")
-        actionFile.addAction("New")
-        actionFile.addAction("Open")
-        actionFile.addAction("Save")
-        actionFile.addSeparator()
-        actionFile.addAction("Quit")
-        menubar.addMenu("Edit")
-        menubar.addMenu("View")
-        menubar.addMenu("Help")
+        # layout = QGridLayout()
+        menubar = self.menuBar()
+        fileMenu = menubar.addMenu('File')
 
-        # add textbox
-        tbox = QPlainTextEdit()
-        layout.addWidget(tbox, 1, 0)
+        impMenu = QMenu('Import', self)
+        impAct = QAction('Import mail', self)
+        impMenu.addAction(impAct)
+
+        newAct = QAction('New Profile', self)
+        newAct = QAction('Load Profile...', self)
+
+        fileMenu.addAction(newAct)
+        fileMenu.addMenu(impMenu)
 
         # self.show()
 
