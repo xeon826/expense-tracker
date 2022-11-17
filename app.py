@@ -23,12 +23,9 @@ class App(QMainWindow):
     def __init__(self):
         super().__init__()
         self.title = 'PyQt5 tabs - pythonspot.com'
-        self.left = 0
-        self.top = 0
-        self.width = 300
-        self.height = 200
         self.setWindowTitle(self.title)
-        self.setGeometry(self.left, self.top, self.width, self.height)
+        # left top width height
+        self.setGeometry(0, 0, 300, 200)
 
         self.table_widget = MyTableWidget(self)
         # self.toolbar = QToolBar("My main toolbar")
@@ -36,19 +33,20 @@ class App(QMainWindow):
         self.setCentralWidget(self.table_widget)
         # layout = QGridLayout()
         menubar = self.menuBar()
-        fileMenu = menubar.addMenu('File')
+        file_menu = menubar.addMenu('File')
 
-        impMenu = QMenu('Import', self)
-        impAct = QAction('Import mail', self)
-        impMenu.addAction(impAct)
+        self.actions = {0: ['New Profile', self], 1: ['Load Profile...', self]}
+        for k, v in self.actions.items():
+            file_menu.addAction(QAction(*v))
 
-        newAct = QAction('New Profile', self)
-        newAct = QAction('Load Profile...', self)
-
-        fileMenu.addAction(newAct)
-        fileMenu.addMenu(impMenu)
+        # imp_menu = QMenu('Import', self)
+        # imp_act = QAction('Import mail', self)
+        # imp_menu.addAction(imp_act)
+        # file_menu.addMenu(imp_menu)
 
         # self.show()
+    def on_import_click(self, s):
+        print("click", s)
 
 
 class MyTableWidget(QWidget):
