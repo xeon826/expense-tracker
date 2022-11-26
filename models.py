@@ -1,6 +1,6 @@
 from datetime import datetime
 from sqlalchemy import create_engine, Column, Integer, String, Date, DateTime, \
-     ForeignKey, event, Float, select
+     ForeignKey, event, Float, select, asc, desc
 from sqlalchemy.orm import scoped_session, sessionmaker, backref, relation
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -42,10 +42,9 @@ class Spreadsheet(Model, CRUD):
         self.amount = amount
 
     def credits(self):
-        # return self.amount >= 0
-        # return session.query(self).filter(self.amount >= 0)
-        stmt = select(self).where(self.amount >= 0)
-        return session.execute(stmt)
+        result = session.query(self).filter(self.amount < 0).order_by(
+            asc(self.date))
+        return result
 
     def debits(self):
         return session.query(self).filter(self.amount < 0)

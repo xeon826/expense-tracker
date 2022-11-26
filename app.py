@@ -4,8 +4,8 @@ from tkinter import filedialog as fd
 import pandas as pd
 import pathlib
 import datetime
-import models
-from models import session
+# import models
+from models import session, Spreadsheet, init_db
 from sqlalchemy import select
 from PyQt5.QtWidgets import QMainWindow, QApplication, QPushButton, QWidget, QAction, QTabWidget, QVBoxLayout, QShortcut
 from PyQt5.QtGui import QKeySequence
@@ -19,9 +19,11 @@ matplotlib.use('Qt5Agg')
 
 class MplCanvas(FigureCanvasQTAgg):
 
-    def __init__(self, parent=None, width=5, height=4, dpi=100):
+    def __init__(self, parent=None, width=10, height=4, dpi=100):
         self.fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = self.fig.add_subplot(111)
+        # self.axes.xlim([0, 30])
+        # self.axes.set_xlim([0, 30])
         super(MplCanvas, self).__init__(self.fig)
 
     def redraw(self):
@@ -33,7 +35,7 @@ class App(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        models.init_db()
+        init_db()
         # con = sqlite3.connect("tutorial.db")
         # self.cur = con.cursor()
         # self.db = orm_sqlite.Database('example.db')
@@ -41,7 +43,7 @@ class App(QMainWindow):
         self.title = 'PyQt5 tabs - pythonspot.com'
         self.setWindowTitle(self.title)
         # left top width height
-        self.setGeometry(0, 0, 1200, 800)
+        self.setGeometry(0, 0, 1500, 800)
         self.table_widget = MyTableWidget(self)
         self.setCentralWidget(self.table_widget)
         menubar = self.menuBar()
@@ -111,7 +113,7 @@ class App(QMainWindow):
 
             for row in result.values.tolist():
                 print(row)
-                spreadsheet = models.Spreadsheet(
+                spreadsheet = Spreadsheet(
                     row[2], datetime.datetime.strptime(row[0], '%Y-%m-%d'),
                     row[4])
                 spreadsheet.save()
@@ -153,7 +155,7 @@ class MyTableWidget(QWidget):
         self.tabs.addTab(self.tab1, "Tab 1")
         self.tabs.addTab(self.tab2, "Tab 2")
 
-        self.sc = MplCanvas(self, width=5, height=4, dpi=100)
+        self.sc = MplCanvas(self, width=15, height=4, dpi=100)
         # stmt = select(models.Spreadsheet).where(models.Spreadsheet.amount < 0)
         # print(models.session.execute(stmt))
         # print(models.session.query( models.Spreadsheet).filter(models.Spreadsheet.amount < 0))
@@ -165,12 +167,21 @@ class MyTableWidget(QWidget):
 
         # spreadsheet = (session.query(models.Spreadsheet).filter_by(
         #     name='ELECTRONIC WITHDRAWAL ATT')).first()
-        spreadsheets = session.query(
-            models.Spreadsheet).filter(models.Spreadsheet.amount < 0)
-        for spreadsheet in spreadsheets:
-            print(spreadsheet.name)
 
+        # spreadsheets = session.query(Spreadsheet).filter(
+        #     Spreadsheet.amount < 0)
+        x_axis = []
+        y_axis = []
+        spreadsheets = Spreadsheet.credits(Spreadsheet)
+        for spreadsheet in spreadsheets:
+            # print(spreadsheet.amount)
+            x_axis.append(spreadsheet.date)
+            y_axis.append(spreadsheet.amount * -1)
+
+        for x in x_axis:
+            print(x)
         # Spreadsheet.name
+        self.sc.axes.plot(x_axis, y_axis)
         # self.sc.axes.plot([0, 1, 2, 3, 4], [10, 1, 20, 3, 40])
 
         # Create first tab
