@@ -49,3 +49,5 @@ Thumbs.db
 *.wmv
 
 .env
+spreadsheet_dir
+*.db

@@ -1,8 +1,14 @@
 import sys
-from PyQt5.QtWidgets import QMainWindow, QApplication, QPushButton, QWidget, QAction, QTabWidget, QVBoxLayout, QToolBar, QMenu, QGridLayout, QMenuBar, QPlainTextEdit
-from PyQt5.QtGui import QIcon
+import random
+from tkinter import filedialog as fd
+import pandas as pd
+import pathlib
+from models import Spreadsheet
+import sqlite3
+import orm_sqlite
+from PyQt5.QtWidgets import QMainWindow, QApplication, QPushButton, QWidget, QAction, QTabWidget, QVBoxLayout, QShortcut
+from PyQt5.QtGui import QKeySequence
 from PyQt5.QtCore import pyqtSlot
-from PyQt5 import QtCore, QtWidgets
 import matplotlib
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
@@ -13,42 +19,56 @@ matplotlib.use('Qt5Agg')
 class MplCanvas(FigureCanvasQTAgg):
 
     def __init__(self, parent=None, width=5, height=4, dpi=100):
-        fig = Figure(figsize=(width, height), dpi=dpi)
-        self.axes = fig.add_subplot(111)
-        super(MplCanvas, self).__init__(fig)
+        self.fig = Figure(figsize=(width, height), dpi=dpi)
+        self.axes = self.fig.add_subplot(111)
+        super(MplCanvas, self).__init__(self.fig)
+
+    def redraw(self):
+        # self.axes = plot
+        self.fig.clf()
 
 
 class App(QMainWindow):
 
     def __init__(self):
         super().__init__()
+        # con = sqlite3.connect("tutorial.db")
+        # self.cur = con.cursor()
+        self.db = orm_sqlite.Database('example.db')
+        Spreadsheet.objects.backend = self.db
         self.title = 'PyQt5 tabs - pythonspot.com'
         self.setWindowTitle(self.title)
         # left top width height
-        self.setGeometry(0, 0, 300, 200)
-
+        self.setGeometry(0, 0, 1200, 800)
         self.table_widget = MyTableWidget(self)
-        # self.toolbar = QToolBar("My main toolbar")
-        # self.addToolBar(self.toolbar)
         self.setCentralWidget(self.table_widget)
-        # layout = QGridLayout()
-        # file_menu = menubar.addMenu('File')
-
         menubar = self.menuBar()
         self.menu_items = {
             'File': {
-                0: ['file_New Profile', self],
-                1: ['Load Profile...', self]
+                0: [['Import', self], self.import_spreadsheet, 'Ctrl+O'],
+                1: [['Load Profile...', self], self.import_spreadsheet,
+                    'Ctrl+l']
             },
             'Something': {
-                0: ['something_New Profile', self],
-                1: ['something_Load Profile...', self],
+                0: [['something_New Profile', self], self.import_spreadsheet,
+                    'Ctrl+Y'],
+                1: [['something_Load Profile...', self],
+                    self.import_spreadsheet, 'Ctrl+W'],
                 'Foobar': {
-                    0: ['foobar_New Profile', self],
-                    1: ['foobar_Load Profile...', self],
+                    0: [['foobar_New Profile', self], self.import_spreadsheet,
+                        'Ctrl+Q'],
+                    'more_foobar': {
+                        0: [['foobar_Load Profile...', self],
+                            self.import_spreadsheet],
+                        1: [['even more foobar_Profile...', self],
+                            self.import_spreadsheet]
+                    },
+                    1: [['foobar_Load Profile...', self],
+                        self.import_spreadsheet],
                 }
             }
         }
+        self.hotkeys = []
         for k, branch in self.menu_items.items():
             self.add_branch(menubar, branch, k)
 
@@ -58,10 +78,59 @@ class App(QMainWindow):
             for key, action in branch.items():
                 self.add_branch(file_menu, action, key)
         else:
-            menubar.addAction(QAction(*branch))
+            action = QAction(*branch[0])
+            action.triggered.connect(branch[1]) if callable(branch[1]) else ''
+            self.define_hotkey(branch) if len(branch) == 3 else ''
+            menubar.addAction(action)
 
-    def on_import_click(self, s):
-        print("click", s)
+    def define_hotkey(self, branch):
+        key_combination = branch[2]
+        self.hotkeys.append(QShortcut(QKeySequence(key_combination), self))
+        self.hotkeys[-1].activated.connect(branch[1])
+
+    def import_spreadsheet(self):
+        filenames = fd.askopenfilenames(title="Import Spreadsheet(s)",
+                                        initialdir='./spreadsheet_dir',
+                                        filetypes=(("", "*.csv"), ("", ".xls"),
+                                                   ("", ".xlsx")))
+        for name in filenames:
+            file_ext = pathlib.Path(name).suffix
+            appropriate_methods = {
+                ".csv": pd.read_csv,
+                ".xls": pd.read_excel,
+                ".xlsx": pd.read_excel
+            }
+
+            n_data = 50
+            self.xdata = list(range(n_data))
+            self.ydata = [random.randint(0, 10) for i in range(n_data)]
+            self.update_plot()
+            result = appropriate_methods[file_ext](name)
+
+            # for row in result.values.tolist():
+            #     print(row)
+            #     Spreadsheet.objects.add({
+            #         'name': row[2],
+            #         'amount': row[4],
+            #         'date': row[0]
+            #     })
+            # for header in result.head().columns:
+            # print(result)
+
+    def update_plot(self):
+        # Drop off the first y element, append a new one.
+        self.ydata = self.ydata[1:] + [random.randint(0, 10)]
+        self.table_widget.sc.axes.cla()  # Clear the canvas.
+        self.table_widget.sc.axes.plot(self.xdata, self.ydata, 'r')
+        # Trigger the canvas to update and redraw.
+        self.table_widget.sc.draw()
+
+
+# class Spreadsheet(orm_sqlite.Model):
+#     id = orm_sqlite.IntegerField(primary_key=True)
+#     name = orm_sqlite.StringField()
+#     amount = orm_sqlite.FloatField()
+#     date = orm_sqlite.StringField()
 
 
 class MyTableWidget(QWidget):
