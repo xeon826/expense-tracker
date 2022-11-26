@@ -22,13 +22,10 @@ class MplCanvas(FigureCanvasQTAgg):
     def __init__(self, parent=None, width=10, height=4, dpi=100):
         self.fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = self.fig.add_subplot(111)
+        # self.axes.tick_params(axis='x', labelrotation=-45)
         # self.axes.xlim([0, 30])
         # self.axes.set_xlim([0, 30])
         super(MplCanvas, self).__init__(self.fig)
-
-    def redraw(self):
-        # self.axes = plot
-        self.fig.clf()
 
 
 class App(QMainWindow):
@@ -36,14 +33,10 @@ class App(QMainWindow):
     def __init__(self):
         super().__init__()
         init_db()
-        # con = sqlite3.connect("tutorial.db")
-        # self.cur = con.cursor()
-        # self.db = orm_sqlite.Database('example.db')
-        # Spreadsheet.objects.backend = self.db
         self.title = 'PyQt5 tabs - pythonspot.com'
         self.setWindowTitle(self.title)
         # left top width height
-        self.setGeometry(0, 0, 1500, 800)
+        self.setGeometry(0, 0, 1500, 1000)
         self.table_widget = MyTableWidget(self)
         self.setCentralWidget(self.table_widget)
         menubar = self.menuBar()
@@ -129,13 +122,6 @@ class App(QMainWindow):
         self.table_widget.sc.draw()
 
 
-# class Spreadsheet(orm_sqlite.Model):
-#     id = orm_sqlite.IntegerField(primary_key=True)
-#     name = orm_sqlite.StringField()
-#     amount = orm_sqlite.FloatField()
-#     date = orm_sqlite.StringField()
-
-
 class MyTableWidget(QWidget):
 
     def __init__(self, parent):
@@ -160,28 +146,38 @@ class MyTableWidget(QWidget):
         # print(models.session.execute(stmt))
         # print(models.session.query( models.Spreadsheet).filter(models.Spreadsheet.amount < 0))
         # print(models.Spreadsheet.credits)
-
-        # result = models.Spreadsheet.credits(models.Spreadsheet)
-        # for r in result:
-        #     print(r.name)
-
-        # spreadsheet = (session.query(models.Spreadsheet).filter_by(
-        #     name='ELECTRONIC WITHDRAWAL ATT')).first()
-
-        # spreadsheets = session.query(Spreadsheet).filter(
-        #     Spreadsheet.amount < 0)
         x_axis = []
         y_axis = []
         spreadsheets = Spreadsheet.credits(Spreadsheet)
         for spreadsheet in spreadsheets:
-            # print(spreadsheet.amount)
-            x_axis.append(spreadsheet.date)
+            print(type(spreadsheet.date))
+            x_axis.append(spreadsheet.date.strftime('%b %d, %Y'))
             y_axis.append(spreadsheet.amount * -1)
 
-        for x in x_axis:
-            print(x)
+        # self.sc.axes.set_xlim([spreadsheets[0].date, spreadsheets[-1].date])
+
+        # row[2], datetime.datetime.strptime(row[0], '%Y-%m-%d'),
+
+        # self.sc.axes.set_xticklabels(self.sc.axes.get_xticks(), rotation=45)
+        # self.sc.axes.set_xlim([
+        #     datetime.datetime.strptime(spreadsheets[0].date, '%Y-%m-%d'),
+        #     datetime.datetime.strptime(spreadsheets[-1].date, '%Y-%m-%d')
+        # ])
+        # print(spreadsheets[0].date)
+        # print(spreadsheets[-1].date)
+
+        # self.sc.axes.set_xlim(
+        #     [datetime.date(2022, 1, 26),
+        #      datetime.date(2022, 3, 1)])
+
+        # for x in x_axis:
+        #     print(x)
         # Spreadsheet.name
         self.sc.axes.plot(x_axis, y_axis)
+        # self.sc.xticks(rotation=45)
+        # self.sc.axes.set_xticklabels(self.sc.axes.get_xticks(), rotation=45)
+
+        # self.sc.axes.set_xticklabels(self.sc.axes.get_xticks(), rotation=45)
         # self.sc.axes.plot([0, 1, 2, 3, 4], [10, 1, 20, 3, 40])
 
         # Create first tab
