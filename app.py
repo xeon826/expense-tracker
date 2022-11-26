@@ -3,9 +3,10 @@ import random
 from tkinter import filedialog as fd
 import pandas as pd
 import pathlib
-from models import Spreadsheet
-import sqlite3
-import orm_sqlite
+import datetime
+import models
+from models import session
+from sqlalchemy import select
 from PyQt5.QtWidgets import QMainWindow, QApplication, QPushButton, QWidget, QAction, QTabWidget, QVBoxLayout, QShortcut
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtCore import pyqtSlot
@@ -32,10 +33,11 @@ class App(QMainWindow):
 
     def __init__(self):
         super().__init__()
+        models.init_db()
         # con = sqlite3.connect("tutorial.db")
         # self.cur = con.cursor()
-        self.db = orm_sqlite.Database('example.db')
-        Spreadsheet.objects.backend = self.db
+        # self.db = orm_sqlite.Database('example.db')
+        # Spreadsheet.objects.backend = self.db
         self.title = 'PyQt5 tabs - pythonspot.com'
         self.setWindowTitle(self.title)
         # left top width height
@@ -101,19 +103,18 @@ class App(QMainWindow):
                 ".xlsx": pd.read_excel
             }
 
-            n_data = 50
-            self.xdata = list(range(n_data))
-            self.ydata = [random.randint(0, 10) for i in range(n_data)]
-            self.update_plot()
+            # n_data = 50
+            # self.xdata = list(range(n_data))
+            # self.ydata = [random.randint(0, 10) for i in range(n_data)]
+            # self.update_plot()
             result = appropriate_methods[file_ext](name)
 
-            # for row in result.values.tolist():
-            #     print(row)
-            #     Spreadsheet.objects.add({
-            #         'name': row[2],
-            #         'amount': row[4],
-            #         'date': row[0]
-            #     })
+            for row in result.values.tolist():
+                print(row)
+                spreadsheet = models.Spreadsheet(
+                    row[2], datetime.datetime.strptime(row[0], '%Y-%m-%d'),
+                    row[4])
+                spreadsheet.save()
             # for header in result.head().columns:
             # print(result)
 
@@ -153,7 +154,24 @@ class MyTableWidget(QWidget):
         self.tabs.addTab(self.tab2, "Tab 2")
 
         self.sc = MplCanvas(self, width=5, height=4, dpi=100)
-        self.sc.axes.plot([0, 1, 2, 3, 4], [10, 1, 20, 3, 40])
+        # stmt = select(models.Spreadsheet).where(models.Spreadsheet.amount < 0)
+        # print(models.session.execute(stmt))
+        # print(models.session.query( models.Spreadsheet).filter(models.Spreadsheet.amount < 0))
+        # print(models.Spreadsheet.credits)
+
+        # result = models.Spreadsheet.credits(models.Spreadsheet)
+        # for r in result:
+        #     print(r.name)
+
+        # spreadsheet = (session.query(models.Spreadsheet).filter_by(
+        #     name='ELECTRONIC WITHDRAWAL ATT')).first()
+        spreadsheets = session.query(
+            models.Spreadsheet).filter(models.Spreadsheet.amount < 0)
+        for spreadsheet in spreadsheets:
+            print(spreadsheet.name)
+
+        # Spreadsheet.name
+        # self.sc.axes.plot([0, 1, 2, 3, 4], [10, 1, 20, 3, 40])
 
         # Create first tab
         self.tab1.layout = QVBoxLayout(self)
