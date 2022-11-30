@@ -1,5 +1,6 @@
 import sys
 import random
+import matplotlib.dates as mdates
 from tkinter import filedialog as fd
 import pandas as pd
 import pathlib
@@ -11,7 +12,7 @@ from PyQt5.QtWidgets import QMainWindow, QApplication, QPushButton, QWidget, QAc
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtCore import pyqtSlot
 import matplotlib
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 
 matplotlib.use('Qt5Agg')
@@ -22,7 +23,7 @@ class MplCanvas(FigureCanvasQTAgg):
     def __init__(self, parent=None, width=10, height=4, dpi=100):
         self.fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = self.fig.add_subplot(111)
-        # self.axes.tick_params(axis='x', labelrotation=-45)
+        self.axes.tick_params(axis='x', labelrotation=-45)
         # self.axes.xlim([0, 30])
         # self.axes.set_xlim([0, 30])
         super(MplCanvas, self).__init__(self.fig)
@@ -142,49 +143,26 @@ class MyTableWidget(QWidget):
         self.tabs.addTab(self.tab2, "Tab 2")
 
         self.sc = MplCanvas(self, width=15, height=4, dpi=100)
-        # stmt = select(models.Spreadsheet).where(models.Spreadsheet.amount < 0)
-        # print(models.session.execute(stmt))
-        # print(models.session.query( models.Spreadsheet).filter(models.Spreadsheet.amount < 0))
-        # print(models.Spreadsheet.credits)
         x_axis = []
         y_axis = []
         spreadsheets = Spreadsheet.credits(Spreadsheet)
         for spreadsheet in spreadsheets:
             print(type(spreadsheet.date))
-            x_axis.append(spreadsheet.date.strftime('%b %d, %Y'))
+            x_axis.append(spreadsheet.date)
             y_axis.append(spreadsheet.amount * -1)
 
-        # self.sc.axes.set_xlim([spreadsheets[0].date, spreadsheets[-1].date])
-
-        # row[2], datetime.datetime.strptime(row[0], '%Y-%m-%d'),
-
-        # self.sc.axes.set_xticklabels(self.sc.axes.get_xticks(), rotation=45)
-        # self.sc.axes.set_xlim([
-        #     datetime.datetime.strptime(spreadsheets[0].date, '%Y-%m-%d'),
-        #     datetime.datetime.strptime(spreadsheets[-1].date, '%Y-%m-%d')
-        # ])
-        # print(spreadsheets[0].date)
-        # print(spreadsheets[-1].date)
-
-        # self.sc.axes.set_xlim(
-        #     [datetime.date(2022, 1, 26),
-        #      datetime.date(2022, 3, 1)])
-
-        # for x in x_axis:
-        #     print(x)
-        # Spreadsheet.name
+        self.sc.axes.xaxis.set_major_formatter(
+            mdates.DateFormatter('%Y-%b-%d'))
         self.sc.axes.plot(x_axis, y_axis)
-        # self.sc.xticks(rotation=45)
-        # self.sc.axes.set_xticklabels(self.sc.axes.get_xticks(), rotation=45)
 
-        # self.sc.axes.set_xticklabels(self.sc.axes.get_xticks(), rotation=45)
-        # self.sc.axes.plot([0, 1, 2, 3, 4], [10, 1, 20, 3, 40])
+        toolbar = NavigationToolbar(self.sc, self)
 
         # Create first tab
         self.tab1.layout = QVBoxLayout(self)
         self.pushButton1 = QPushButton("PyQt5 button")
         # self.pushButton1 = QPushButton("PyQt5 button")
         self.tab1.layout.addWidget(self.sc)
+        self.tab1.layout.addWidget(toolbar)
         self.tab1.setLayout(self.tab1.layout)
 
         # self.setCentralWidget(sc)
